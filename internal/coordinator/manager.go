@@ -75,15 +75,29 @@ func ListHerds() ([]model.Herd, error) {
 	return herds, nil
 }
 
-func CreateNode(node model.Node) error {
-	log.Println("Creating node:", node.Name)
-	// Here you would typically insert the node into the database
-	return nil
+func CreateNode(nodeInput model.Node) (model.Node, error) {
+	node := model.Node{
+		ID:        uuid.New().String(),
+		Name:      nodeInput.Name,
+		IPAddress: nodeInput.IPAddress,
+		Port:      nodeInput.Port,
+		Status:    "INITIALIZING",
+	}
+
+	_, err := db.Collection("nodes").InsertOne(context.Background(), node)
+	if err != nil {
+		log.Println("Error creating node:", err)
+		return model.Node{}, err
+	}
+	return node, nil
 }
 
 func DeleteNode(nodeID string) error {
-	log.Println("Deleting node with ID:", nodeID)
-	// Here you would typically remove the node from the database
+	_, err := db.Collection("nodes").DeleteOne(context.Background(), bson.M{"id": nodeID})
+	if err != nil {
+		log.Println("Error deleting node:", err)
+		return err
+	}
 	return nil
 }
 

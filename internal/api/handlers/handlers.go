@@ -136,16 +136,23 @@ func HandleListHerds(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleFetchNode(w http.ResponseWriter, r *http.Request) {
-	log.Println("Fetching node details")
+	parts := strings.Split(strings.Trim(r.URL.Path, "/node/"), "/")
+	nodeId := parts[0]
+	if nodeId == "" {
+		writeJSONError(w, "Node ID must be provided", http.StatusBadRequest)
+		return
+	}
+	node, err := coordinator.GetNode(nodeId)
+	if err != nil {
+		log.Printf("Error fetching node: %v", err)
+		writeJSONError(w, "Error fetching node", http.StatusInternalServerError)
+		return
+	}
 
-	coordinator.GetNode("exampleNodeID")
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Node details fetched successfully"))
+	writeJSONSuccess(w, "Node details fetched successfully", node, http.StatusOK)
 }
 
 func HandleListNodes(w http.ResponseWriter, r *http.Request) {
-
 	nodes, err := coordinator.ListNodes()
 	if err != nil {
 		log.Printf("Error listing nodes: %v", err)
@@ -153,33 +160,48 @@ func HandleListNodes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	nodeNames := make([]string, len(nodes))
-	for i, node := range nodes {
-		nodeNames[i] = node.Name
+	nodesNormalized := nodes
+	if nodesNormalized == nil {
+		nodesNormalized = []model.Node{}
 	}
-	w.Write([]byte("Nodes: " + strings.Join(nodeNames, ", ")))
+	writeJSONSuccess(w, "Nodes fetched successfully", nodesNormalized, http.StatusOK)
 }
 
 func HandleRegisterNode(w http.ResponseWriter, r *http.Request) {
-	coordinator.CreateNode(model.Node{
-		Name: "exampleNode",
-		ID:   "exampleNodeID",
-	})
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Node registered successfully"))
+	var nodeInput model.Node
+	err := json.NewDecoder(r.Body).Decode(&nodeInput)
+	if err != nil {
+		log.Printf("Error decoding request body: %v", err)
+		writeJSONError(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	if nodeInput.Name == "" {
+		log.Println("Node name or ID is empty")
+		writeJSONError(w, "Node name must be provided", http.StatusBadRequest)
+		return
+	}
+	node, err := coordinator.CreateNode(nodeInput)
+	if err != nil {
+		log.Printf("Error registering node: %v", err)
+		writeJSONError(w, "Error registering node", http.StatusInternalServerError)
+		return
+	}
+	writeJSONSuccess(w, "Node registered successfully", node, http.StatusCreated)
 }
 
 func HandleDeleteNode(w http.ResponseWriter, r *http.Request) {
-	log.Println("Deleting a node")
-	err := coordinator.DeleteNode("exampleNodeID")
+	parts := strings.Split(strings.Trim(r.URL.Path, "/node/"), "/")
+	nodeId := parts[0]
+	if nodeId == "" {
+		writeJSONError(w, "Node ID must be provided", http.StatusBadRequest)
+		return
+	}
+	err := coordinator.DeleteNode(nodeId)
 	if err != nil {
 		log.Printf("Error deleting node: %v", err)
 		writeJSONError(w, "Error deleting node", http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Node deleted successfully"))
+	writeJSONSuccess(w, "Node deleted successfully", nil, http.StatusOK)
 }
