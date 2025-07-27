@@ -16,8 +16,15 @@ func NewRouter() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	// r.Get("/health", handlers.HandleHealthCheck)
-	r.Post("/prompt", handlers.HandleGeneratePrompt)
+	r.Get("/herd", handlers.HandleListHerds)
+	r.Get("/herd/{id}", handlers.HandleGetHerd)
+	r.Post("/herd", handlers.HandleCreateHerd)
+	r.Delete("/herd/{id}", handlers.HandleDeleteHerd)
+
+	r.Get("/node", handlers.HandleListNodes)
+	r.Get("/node/{id}", handlers.HandleFetchNode)
+	r.Post("/node", handlers.HandleRegisterNode)
+	r.Delete("/node/{id}", handlers.HandleDeleteNode)
 
 	return r
 }
