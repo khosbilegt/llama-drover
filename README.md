@@ -6,6 +6,8 @@ A distributed load balancer and coordinator for Large Language Model (LLM) infer
 
 Llama Drover consists of a central coordinator server that accepts HTTP API calls for LLM questions and intelligently delegates them to connected worker nodes via gRPC. The coordinator maintains real-time statistics about each node's performance and health, ensuring requests are always routed to the most optimal available node.
 
+**Perfect for startups and solo developers** who have multiple workstations with GPUs but lack the budget for expensive LLM API services. Turn your existing hardware into a powerful, distributed LLM inference cluster.
+
 ## Architecture
 
 ```
@@ -24,7 +26,7 @@ Llama Drover consists of a central coordinator server that accepts HTTP API call
 
 ## Features
 
-### Coordinator Server
+### Coordinator Server (Planned)
 
 - **HTTP API**: RESTful endpoints for LLM inference requests
 - **Intelligent Load Balancing**: Routes requests to the fastest available nodes
@@ -33,7 +35,7 @@ Llama Drover consists of a central coordinator server that accepts HTTP API call
 - **Health Checks**: Continuous monitoring of node availability
 - **Failover Support**: Automatic routing around unhealthy nodes
 
-### Node Management
+### Node Management (Planned)
 
 - **gRPC Communication**: High-performance communication with worker nodes
 - **Performance Tracking**: Real-time latency and throughput monitoring
