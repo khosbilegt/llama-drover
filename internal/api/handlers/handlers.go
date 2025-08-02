@@ -85,7 +85,7 @@ func HandleCreateCluster(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleDeleteCluster(w http.ResponseWriter, r *http.Request) {
-	parts := strings.Split(strings.Trim(r.URL.Path, "/Cluster/"), "/")
+	parts := strings.Split(strings.Trim(r.URL.Path, "/cluster/"), "/")
 	log.Println("Fetching Cluster details", parts)
 	var clusterID string = parts[0]
 	if clusterID == "" {
@@ -99,7 +99,7 @@ func HandleDeleteCluster(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetCluster(w http.ResponseWriter, r *http.Request) {
-	parts := strings.Split(strings.Trim(r.URL.Path, "/Cluster/"), "/")
+	parts := strings.Split(strings.Trim(r.URL.Path, "/cluster/"), "/")
 	log.Println("Fetching Cluster details", parts)
 	var clusterID string = parts[0]
 	if clusterID == "" {
@@ -111,6 +111,11 @@ func HandleGetCluster(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error getting Cluster: %v", err)
 		writeJSONError(w, "Error getting Cluster", http.StatusInternalServerError)
+		return
+	}
+	if Cluster.ID == "" {
+		log.Printf("Cluster with ID %s not found", clusterID)
+		writeJSONError(w, "Cluster not found", http.StatusNotFound)
 		return
 	}
 
@@ -144,6 +149,11 @@ func HandleFetchNode(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, "Error fetching node", http.StatusInternalServerError)
 		return
 	}
+	if node.ID == "" {
+		log.Printf("Node with ID %s not found", nodeId)
+		writeJSONError(w, "Node not found", http.StatusNotFound)
+		return
+	}
 
 	writeJSONSuccess(w, "Node details fetched successfully", node, http.StatusOK)
 }
@@ -163,7 +173,7 @@ func HandleListNodes(w http.ResponseWriter, r *http.Request) {
 	writeJSONSuccess(w, "Nodes fetched successfully", nodesNormalized, http.StatusOK)
 }
 
-func HandleRegisterNode(w http.ResponseWriter, r *http.Request) {
+func HandleCreateNode(w http.ResponseWriter, r *http.Request) {
 	var nodeInput model.Node
 	err := json.NewDecoder(r.Body).Decode(&nodeInput)
 	if err != nil {
@@ -171,11 +181,24 @@ func HandleRegisterNode(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	if nodeInput.Name == "" {
-		log.Println("Node name or ID is empty")
-		writeJSONError(w, "Node name must be provided", http.StatusBadRequest)
+	if nodeInput.Name == "" || nodeInput.ClusterID == "" {
+		log.Println("Node name or Cluster ID is empty")
+		writeJSONError(w, "Node name and Cluster ID must be provided", http.StatusBadRequest)
 		return
 	}
+
+	cluster, clusterErr := coordinator.GetCluster(nodeInput.ClusterID)
+	if clusterErr != nil {
+		log.Printf("Error fetching cluster: %v", clusterErr)
+		writeJSONError(w, "Error fetching cluster", http.StatusInternalServerError)
+		return
+	}
+	if cluster.ID == "" {
+		log.Printf("Cluster with ID %s does not exist", nodeInput.ClusterID)
+		writeJSONError(w, "Cluster does not exist", http.StatusNotFound)
+		return
+	}
+
 	node, err := coordinator.CreateNode(nodeInput)
 	if err != nil {
 		log.Printf("Error registering node: %v", err)

@@ -1,18 +1,19 @@
 package model
 
 type Cluster struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Model string `json:"model"`
-	Nodes []Node `json:"nodes"`
+	ID    string `json:"id" bson:"id"`
+	Name  string `json:"name" bson:"name"`
+	Model string `json:"model" bson:"model"`
+	Nodes []Node `json:"nodes" bson:"nodes"`
 }
 
 type Node struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Status    string `json:"status"`
-	IPAddress string `json:"ip_address"`
-	Port      int    `json:"port"`
+	ID        string `json:"id" bson:"id"`
+	ClusterID string `json:"cluster_id" bson:"cluster_id"`
+	Name      string `json:"name" bson:"name"`
+	Status    string `json:"status" bson:"status"`
+	IPAddress string `json:"ip_address" bson:"ip_address"`
+	Port      int    `json:"port" bson:"port"`
 }
 
 type Response struct {

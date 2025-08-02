@@ -1,0 +1,71 @@
+edition = "2023";
+
+option go_package = "github.com/khosbilegt/llama-drover/internal/model";
+
+package routeguide;
+
+enum RequestType {
+    REQUEST_TYPE_UNSPECIFIED = 0;
+    REQUEST_TYPE_REGISTER = 1;
+    REQUEST_TYPE_UNREGISTER = 2;
+    REQUEST_TYPE_ERROR = 3;
+    REQUEST_TYPE_PROMPT = 4;
+}
+
+message RegisterRequest {
+    string node_id = 1;
+}
+
+message UnregisterRequest {
+    string node_id = 1;
+}
+
+message PromptRequest {
+    string prompt = 1;
+    repeated string prompt_history = 2;
+}
+
+message RegisterResponse {
+    string node_id = 1;
+    string message = 2;
+}
+
+message UnregisterResponse {
+    string node_id = 1;
+    string message = 2;
+}
+
+message PromptResponse {
+    string response = 1;
+    repeated string prompt_history = 2;
+    bool is_complete = 3;
+}
+
+message ErrorResponse {
+    string message = 1;
+}
+
+message ConnectRequest {
+    RequestType type = 1;
+    int64 timestamp = 2;
+    oneof request {
+        RegisterRequest register = 3;
+        UnregisterRequest unregister = 4;
+        PromptRequest prompt = 5;
+    }
+}
+
+message ConnectResponse {
+    RequestType type = 1;
+    int64 timestamp = 2;
+    oneof response {
+        RegisterResponse register = 3;
+        UnregisterResponse unregister = 4;
+        PromptResponse prompt = 5;
+        ErrorResponse error = 6;
+    }
+}
+
+service Coordinator {
+    rpc Connect(stream ConnectRequest) returns (stream ConnectResponse);
+}   

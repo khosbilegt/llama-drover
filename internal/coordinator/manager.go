@@ -48,6 +48,9 @@ func GetCluster(clusterID string) (model.Cluster, error) {
 	var cluster model.Cluster
 	err := db.Collection("clusters").FindOne(context.Background(), bson.M{"id": clusterID}).Decode(&cluster)
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return model.Cluster{}, nil
+		}
 		log.Println("Error getting cluster:", err)
 		return model.Cluster{}, err
 	}
@@ -78,6 +81,7 @@ func ListClusters() ([]model.Cluster, error) {
 func CreateNode(nodeInput model.Node) (model.Node, error) {
 	node := model.Node{
 		ID:        uuid.New().String(),
+		ClusterID: nodeInput.ClusterID,
 		Name:      nodeInput.Name,
 		IPAddress: nodeInput.IPAddress,
 		Port:      nodeInput.Port,
@@ -93,6 +97,7 @@ func CreateNode(nodeInput model.Node) (model.Node, error) {
 }
 
 func DeleteNode(nodeID string) error {
+	log.Println("Deleting node with ID:", nodeID)
 	_, err := db.Collection("nodes").DeleteOne(context.Background(), bson.M{"id": nodeID})
 	if err != nil {
 		log.Println("Error deleting node:", err)
@@ -103,8 +108,12 @@ func DeleteNode(nodeID string) error {
 
 func GetNode(nodeID string) (model.Node, error) {
 	var node model.Node
+	log.Println("Fetching node with ID:", nodeID)
 	err := db.Collection("nodes").FindOne(context.Background(), bson.M{"id": nodeID}).Decode(&node)
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return model.Node{}, nil
+		}
 		log.Println("Error getting node:", err)
 		return model.Node{}, err
 	}
