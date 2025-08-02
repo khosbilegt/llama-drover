@@ -17,62 +17,62 @@ func Init(database *mongo.Database) {
 	log.Println("Coordinator initialized with database:", db.Name())
 }
 
-func CreateHerd(name string, modelName string) (model.Herd, error) {
+func CreateCluster(name string, modelName string) (model.Cluster, error) {
 	id := uuid.New()
 
-	var herd = model.Herd{
+	var cluster = model.Cluster{
 		Name:  name,
 		ID:    id.String(),
 		Model: modelName,
 		Nodes: []model.Node{},
 	}
-	_, err := db.Collection("herds").InsertOne(context.Background(), herd)
+	_, err := db.Collection("clusters").InsertOne(context.Background(), cluster)
 	if err != nil {
-		log.Println("Error creating herd:", err)
-		return model.Herd{}, err
+		log.Println("Error creating cluster:", err)
+		return model.Cluster{}, err
 	}
-	return herd, nil
+	return cluster, nil
 }
 
-func DeleteHerd(herdID string) error {
-	log.Println("Deleting herd with ID:", herdID)
-	_, err := db.Collection("herds").DeleteOne(context.Background(), bson.M{"id": herdID})
+func DeleteCluster(clusterID string) error {
+	log.Println("Deleting cluster with ID:", clusterID)
+	_, err := db.Collection("clusters").DeleteOne(context.Background(), bson.M{"id": clusterID})
 	if err != nil {
-		log.Println("Error deleting herd:", err)
+		log.Println("Error deleting cluster:", err)
 		return err
 	}
 	return nil
 }
 
-func GetHerd(herdID string) (model.Herd, error) {
-	var herd model.Herd
-	err := db.Collection("herds").FindOne(context.Background(), bson.M{"id": herdID}).Decode(&herd)
+func GetCluster(clusterID string) (model.Cluster, error) {
+	var cluster model.Cluster
+	err := db.Collection("clusters").FindOne(context.Background(), bson.M{"id": clusterID}).Decode(&cluster)
 	if err != nil {
-		log.Println("Error getting herd:", err)
-		return model.Herd{}, err
+		log.Println("Error getting cluster:", err)
+		return model.Cluster{}, err
 	}
-	return herd, nil
+	return cluster, nil
 }
 
-func ListHerds() ([]model.Herd, error) {
-	var herds []model.Herd
-	cursor, err := db.Collection("herds").Find(context.Background(), bson.M{})
+func ListClusters() ([]model.Cluster, error) {
+	var clusters []model.Cluster
+	cursor, err := db.Collection("clusters").Find(context.Background(), bson.M{})
 	if err != nil {
-		log.Println("Error listing herds:", err)
+		log.Println("Error listing clusters:", err)
 		return nil, err
 	}
 	defer cursor.Close(context.Background())
 
 	for cursor.Next(context.Background()) {
-		var herd model.Herd
-		if err := cursor.Decode(&herd); err != nil {
-			log.Println("Error decoding herd:", err)
+		var cluster model.Cluster
+		if err := cursor.Decode(&cluster); err != nil {
+			log.Println("Error decoding cluster:", err)
 			continue
 		}
-		herds = append(herds, herd)
+		clusters = append(clusters, cluster)
 	}
 
-	return herds, nil
+	return clusters, nil
 }
 
 func CreateNode(nodeInput model.Node) (model.Node, error) {

@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-
 	"github.com/khosbilegt/llama-drover/internal/api/handlers"
 )
 
@@ -16,10 +15,10 @@ func NewRouter() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Get("/herd", handlers.HandleListHerds)
-	r.Get("/herd/{id}", handlers.HandleGetHerd)
-	r.Post("/herd", handlers.HandleCreateHerd)
-	r.Delete("/herd/{id}", handlers.HandleDeleteHerd)
+	r.Get("/cluster", handlers.HandleListClusters)
+	r.Get("/cluster/{id}", handlers.HandleGetCluster)
+	r.Post("/cluster", handlers.HandleCreateCluster)
+	r.Delete("/cluster/{id}", handlers.HandleDeleteCluster)
 
 	r.Get("/node", handlers.HandleListNodes)
 	r.Get("/node/{id}", handlers.HandleFetchNode)

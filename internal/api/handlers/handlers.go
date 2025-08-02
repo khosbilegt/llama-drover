@@ -45,10 +45,6 @@ func writeJSONSuccess(w http.ResponseWriter, message string, data interface{}, s
 	json.NewEncoder(w).Encode(successResp)
 }
 
-func HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
-	writeJSONSuccess(w, "Service is healthy", nil, http.StatusOK)
-}
-
 func HandleGeneratePrompt(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -63,76 +59,76 @@ func HandleGeneratePrompt(w http.ResponseWriter, r *http.Request) {
 	writeJSONSuccess(w, "Prompt generated successfully", nil, http.StatusOK)
 }
 
-func HandleCreateHerd(w http.ResponseWriter, r *http.Request) {
-	var herd model.Herd
-	err := json.NewDecoder(r.Body).Decode(&herd)
+func HandleCreateCluster(w http.ResponseWriter, r *http.Request) {
+	var cluster model.Cluster
+	err := json.NewDecoder(r.Body).Decode(&cluster)
 	if err != nil {
 		log.Printf("Error decoding request body: %v", err)
 		writeJSONError(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if herd.Name == "" || herd.Model == "" {
-		log.Println("Herd name or model is empty")
-		writeJSONError(w, "Herd name and model must be provided", http.StatusBadRequest)
+	if cluster.Name == "" || cluster.Model == "" {
+		log.Println("Cluster name or model is empty")
+		writeJSONError(w, "Cluster name and model must be provided", http.StatusBadRequest)
 		return
 	}
 
-	herd, createErr := coordinator.CreateHerd(herd.Name, herd.Model)
+	cluster, createErr := coordinator.CreateCluster(cluster.Name, cluster.Model)
 	if createErr != nil {
-		log.Printf("Error creating herd: %v", createErr)
-		writeJSONError(w, "Error creating herd", http.StatusInternalServerError)
+		log.Printf("Error creating Cluster: %v", createErr)
+		writeJSONError(w, "Error creating Cluster", http.StatusInternalServerError)
 		return
 	}
 
-	writeJSONSuccess(w, "Herd created successfully", herd, http.StatusCreated)
+	writeJSONSuccess(w, "Cluster created successfully", cluster, http.StatusCreated)
 }
 
-func HandleDeleteHerd(w http.ResponseWriter, r *http.Request) {
-	parts := strings.Split(strings.Trim(r.URL.Path, "/herd/"), "/")
-	log.Println("Fetching herd details", parts)
-	var herdID string = parts[0]
-	if herdID == "" {
-		writeJSONError(w, "Herd ID must be provided", http.StatusBadRequest)
+func HandleDeleteCluster(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(strings.Trim(r.URL.Path, "/Cluster/"), "/")
+	log.Println("Fetching Cluster details", parts)
+	var clusterID string = parts[0]
+	if clusterID == "" {
+		writeJSONError(w, "Cluster ID must be provided", http.StatusBadRequest)
 		return
 	}
 
-	coordinator.DeleteHerd(herdID)
+	coordinator.DeleteCluster(clusterID)
 
-	writeJSONSuccess(w, "Herd deleted successfully", nil, http.StatusOK)
+	writeJSONSuccess(w, "Cluster deleted successfully", nil, http.StatusOK)
 }
 
-func HandleGetHerd(w http.ResponseWriter, r *http.Request) {
-	parts := strings.Split(strings.Trim(r.URL.Path, "/herd/"), "/")
-	log.Println("Fetching herd details", parts)
-	var herdID string = parts[0]
-	if herdID == "" {
-		writeJSONError(w, "Herd ID must be provided", http.StatusBadRequest)
+func HandleGetCluster(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(strings.Trim(r.URL.Path, "/Cluster/"), "/")
+	log.Println("Fetching Cluster details", parts)
+	var clusterID string = parts[0]
+	if clusterID == "" {
+		writeJSONError(w, "Cluster ID must be provided", http.StatusBadRequest)
 		return
 	}
 
-	herd, err := coordinator.GetHerd(herdID)
+	Cluster, err := coordinator.GetCluster(clusterID)
 	if err != nil {
-		log.Printf("Error getting herd: %v", err)
-		writeJSONError(w, "Error getting herd", http.StatusInternalServerError)
+		log.Printf("Error getting Cluster: %v", err)
+		writeJSONError(w, "Error getting Cluster", http.StatusInternalServerError)
 		return
 	}
 
-	writeJSONSuccess(w, "Herd details fetched successfully", herd, http.StatusOK)
+	writeJSONSuccess(w, "Cluster details fetched successfully", Cluster, http.StatusOK)
 }
 
-func HandleListHerds(w http.ResponseWriter, r *http.Request) {
-	herds, err := coordinator.ListHerds()
+func HandleListClusters(w http.ResponseWriter, r *http.Request) {
+	clusters, err := coordinator.ListClusters()
 	if err != nil {
-		log.Printf("Error listing herds: %v", err)
-		writeJSONError(w, "Error listing herds", http.StatusInternalServerError)
+		log.Printf("Error listing clusters: %v", err)
+		writeJSONError(w, "Error listing clusters", http.StatusInternalServerError)
 		return
 	}
-	herdsNormalized := herds
-	if (herdsNormalized) == nil {
-		herdsNormalized = []model.Herd{}
+	clustersNormalized := clusters
+	if (clustersNormalized) == nil {
+		clustersNormalized = []model.Cluster{}
 	}
-	writeJSONSuccess(w, "Herds fetched successfully", herdsNormalized, http.StatusOK)
+	writeJSONSuccess(w, "clusters fetched successfully", clustersNormalized, http.StatusOK)
 }
 
 func HandleFetchNode(w http.ResponseWriter, r *http.Request) {
