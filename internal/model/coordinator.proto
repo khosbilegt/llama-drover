@@ -2,7 +2,7 @@ edition = "2023";
 
 option go_package = "github.com/khosbilegt/llama-drover/internal/model";
 
-package routeguide;
+package coordinator;
 
 enum RequestType {
     REQUEST_TYPE_UNSPECIFIED = 0;
