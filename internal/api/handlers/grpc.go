@@ -66,5 +66,4 @@ func (s *CoordinatorGRPCServer) Connect(stream pb.Coordinator_ConnectServer) err
 		// 	return err
 		// }
 	}
-	return nil
 }

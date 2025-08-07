@@ -19,15 +19,15 @@ import (
 
 func init() {
 	log.Println("Loading environment variables...")
-	dotEnvErr := godotenv.Load()
-	if dotEnvErr != nil {
-		log.Fatalf("Error loading .env file: %v", dotEnvErr)
+
+	err := godotenv.Load(".env.server")
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
 	}
 }
 
 func main() {
 	log.Println("Starting server...")
-
 	port := os.Getenv("PORT")
 	grpcPort := os.Getenv("GRPC_PORT")
 	mongoURI := os.Getenv("MONGO_URI")
@@ -53,7 +53,6 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	// Start HTTP server
 	go func() {
 		defer wg.Done()
 		log.Printf("Starting HTTP server on port: %s", port)
@@ -66,13 +65,11 @@ func main() {
 	go func() {
 		defer wg.Done()
 
-		// Listen on the gRPC port
 		listener, err := net.Listen("tcp", ":"+grpcPort)
 		if err != nil {
 			log.Fatalf("Failed to listen on gRPC port %s: %v", grpcPort, err)
 		}
 
-		// Create gRPC server
 		grpcServer := grpc.NewServer()
 		pb.RegisterCoordinatorServer(grpcServer, &handlers.CoordinatorGRPCServer{})
 
